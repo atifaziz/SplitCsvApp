@@ -1,0 +1,16 @@
+bin/**
+*.dll
+*.pdb
+*.user
+*.cache
+*.docstates
+*.suo
+obj/**
+_ReSharper.*
+*.orig
+dist/**
+pkg/base/**
+*.nupkg
+packages/**
+.nuget/NuGet.exe
+.nuget/nuget.exe
