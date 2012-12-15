@@ -30,6 +30,7 @@ namespace SplitCsvApp
     using System.Text;
     using Microsoft.VisualBasic.FileIO;
     using Mono.Options;
+    using MoreLinq;
 
     #endregion
 
@@ -104,56 +105,47 @@ namespace SplitCsvApp
             if (!paths.Any())
                 throw new Exception("Missing at least one file specification.");
 
-            foreach (var group in 
+            foreach (var rows in 
                 from path in paths
-                let groups =
-                    from fields in 
-                        from source in new[] 
+                from rows in 
+                    from source in new[] 
+                    {
+                        Parse(() => new TextFieldParser(path, encoding, detectEncoding: false)
                         {
-                            Parse(() => new TextFieldParser(path, encoding, detectEncoding: false)
-                            {
-                                TextFieldType  = FieldType.Delimited,
-                                Delimiters = new[] { "," }, 
-                            }, 
-                            (_, hs) => hs, 
-                            (ln, hs, fs) => new 
-                            { 
-                                LineNumber = ln, 
-                                Headers = hs, 
-                                Fields = fs 
-                            })
-                        }
-                        select source.Select((e, i) => new 
+                            TextFieldType  = FieldType.Delimited,
+                            Delimiters = new[] { "," }, 
+                        }, 
+                        (_, hs) => hs, 
+                        (ln, hs, fs) => new 
                         { 
-                            Index = i, 
-                            e.LineNumber, 
-                            e.Headers, 
-                            e.Fields, 
-                        }) into source
-                        from rows in source
-                        select rows
-                    group fields by fields.Index / linesPerGroup
-                from g in groups
-                let filename = 
-                    string.Format(CultureInfo.InvariantCulture, 
-                        @"{0}-{1}{2}", 
-                        Path.GetFileNameWithoutExtension(path),
-                        g.Key + 1,
-                        Path.GetExtension(path))
+                            LineNumber = ln, 
+                            Headers = hs, 
+                            Fields = fs 
+                        })
+                    }
+                    select source.Index() into source
+                    from rows in source.GroupAdjacent(e => e.Key / linesPerGroup, e => e.Value)
+                    select rows
+                let filename = string.Format(CultureInfo.InvariantCulture, 
+                                   @"{0}-{1}{2}", 
+                                   Path.GetFileNameWithoutExtension(path),
+                                   rows.Key + 1,
+                                   Path.GetExtension(path))
                 select new 
                 {
                     OutputFilePath = Path.Combine(Path.GetDirectoryName(path), filename),
-                    Rows = g.Select((e, i) => new 
-                    { 
-                        Index = i, 
-                        e.Headers, 
-                        e.Fields 
-                    })
+                    Rows = from row in rows.Index()
+                           select new 
+                           { 
+                               Index = row.Key, 
+                               row.Value.Headers, 
+                               row.Value.Fields 
+                           }
                 })
             {
-                Console.WriteLine(group.OutputFilePath);
-                using (var writer = new StreamWriter(group.OutputFilePath, false, encoding))
-                foreach (var row in group.Rows)
+                Console.WriteLine(rows.OutputFilePath);
+                using (var writer = new StreamWriter(rows.OutputFilePath, false, encoding))
+                foreach (var row in rows.Rows)
                 {
                     if (row.Index == 0)
                         writer.WriteLine(row.Headers.ToQuotedCommaDelimited());
@@ -171,7 +163,7 @@ namespace SplitCsvApp
                 select field ?? string.Empty into field
                 select field.Replace("\"", "\"\"") into escaped
                 select "\"" + escaped + "\"";
-            return string.Join(",", quoted.ToArray());
+            return quoted.ToDelimitedString(",");
         }
 
         static IEnumerable<TResult> Parse<THeader, TResult>(
@@ -218,6 +210,7 @@ namespace SplitCsvApp
                 "Portions:",
                 "  - Copyright (c) 2008 Novell (http://www.novell.com)",
                 "  - Copyright (c) 2009 Federico Di Gregorio",
+                "  - Copyright (c) 2008 Jonathan Skeet",
                 null,
                 "This is free software; see the source for copying conditions. There is NO",
                 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
