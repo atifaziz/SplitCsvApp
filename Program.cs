@@ -68,6 +68,7 @@ namespace SplitCsvApp
             var encoding = Encoding.Default;
             var linesPerGroup = (int?) null;
             var outputDirectoryPath = (string) null;
+            var emitAbsolutePaths = false;
 
             var options = new OptionSet
             {
@@ -77,6 +78,7 @@ namespace SplitCsvApp
                 { "e|encoding=", "input/output file encoding", v => encoding = Encoding.GetEncoding(v) },
                 { "l|lines=", string.Format("lines per split ({0:N0})", Defaults.LinesPerGroup), v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
                 { "od|output-dir=", "output directory (default is same as source)", v => outputDirectoryPath = v.Trim() },
+                { "ap|absolute-paths", "emit absolute paths to split files", v => emitAbsolutePaths = true },
             };
 
             var tail = options.Parse(args);
@@ -136,9 +138,12 @@ namespace SplitCsvApp
                 let dir = string.IsNullOrEmpty(outputDirectoryPath) 
                         ? Path.GetDirectoryName(path) 
                         : outputDirectoryPath
+                let ofp = Path.Combine(dir, filename)
                 select new 
                 {
-                    OutputFilePath = Path.Combine(dir, filename),
+                    OutputFilePath = emitAbsolutePaths 
+                                   ? Path.GetFullPath(ofp) 
+                                   : ofp,
                     Rows = from row in rows.Index()
                            select new 
                            { 
