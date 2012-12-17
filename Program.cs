@@ -128,7 +128,12 @@ namespace SplitCsvApp
                         })
                     }
                     select source.Index() into source
-                    from rows in source.GroupAdjacent(e => e.Key / linesPerGroup, e => e.Value)
+                    from pair in source.GroupAdjacent(e => e.Key / linesPerGroup, e => e.Value)
+                                       .Pairwise((prev, curr) => new { Previous = prev, Current = curr })
+                                       .Index()
+                    from rows in pair.Key == 0 
+                                 ? new[] { pair.Value.Previous, pair.Value.Current } 
+                                 : new[] { pair.Value.Current }
                     select rows
                 let filename = string.Format(CultureInfo.InvariantCulture, 
                                    @"{0}-{1}{2}", 
