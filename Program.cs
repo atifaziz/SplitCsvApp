@@ -211,7 +211,7 @@ namespace SplitCsvApp
             }
         }
 
-        static readonly Uri HomeUrl = new Uri("http://bitbucket.org/raboof/splitcsv");
+        static readonly Uri HomeUrl = new Uri("https://github.com/atifaziz/SplitCsvApp");
 
         static IEnumerable<string> About()
         {
