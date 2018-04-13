@@ -1,6 +1,6 @@
 #region License and Terms
 // MoreLINQ - Extensions to LINQ to Objects
-// Copyright (c) 2008 Jonathan Skeet. All rights reserved.
+// Copyright (c) 2012 Atif Aziz. All rights reserved.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ namespace MoreLinq
         /// <returns>A sequence of <see cref="KeyValuePair{TKey,TValue}"/>.</returns>
         /// <remarks>This operator uses deferred execution and streams its 
         /// results.</remarks>
+        
         public static IEnumerable<KeyValuePair<int, TSource>> Index<TSource>(this IEnumerable<TSource> source)
         {
             return source.Index(0);
@@ -48,6 +49,7 @@ namespace MoreLinq
         /// <returns>A sequence of <see cref="KeyValuePair{TKey,TValue}"/>.</returns>
         /// <remarks>This operator uses deferred execution and streams its 
         /// results.</remarks>
+        
         public static IEnumerable<KeyValuePair<int, TSource>> Index<TSource>(this IEnumerable<TSource> source, int startIndex)
         {
             return source.Select((item, index) => new KeyValuePair<int, TSource>(startIndex + index, item));

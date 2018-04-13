@@ -1,6 +1,6 @@
 #region License and Terms
 // MoreLINQ - Extensions to LINQ to Objects
-// Copyright (c) 2008 Jonathan Skeet. All rights reserved.
+// Copyright (c) 2012 Atif Aziz. All rights reserved.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,11 +43,12 @@ namespace MoreLinq
         /// <example>
         /// <code>
         /// int[] numbers = { 123, 456, 789 };
-        /// IEnumerable&lt;int&gt; result = numbers.Pairwise(5, (a, b) => a + b);
+        /// IEnumerable&lt;int&gt; result = numbers.Pairwise((a, b) => a + b);
         /// </code>
         /// The <c>result</c> variable, when iterated over, will yield 
         /// 579 and 1245, in turn.
         /// </example>
+
         public static IEnumerable<TResult> Pairwise<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TSource, TResult> resultSelector)
         {
             if (source == null) throw new ArgumentNullException("source");
