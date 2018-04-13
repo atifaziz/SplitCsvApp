@@ -38,5 +38,5 @@ using ComVisible = System.Runtime.InteropServices.ComVisibleAttribute;
 [assembly: AssemblyConfiguration("RELEASE")]
 #endif
 
-[assembly: CLSCompliant(true)] 
+[assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

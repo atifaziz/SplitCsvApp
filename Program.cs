@@ -66,8 +66,8 @@ namespace SplitCsvApp
             var verbose = false;
             var debug = false;
             var encoding = Encoding.Default;
-            var linesPerGroup = (int?) null;
-            var outputDirectoryPath = (string) null;
+            var linesPerGroup = (int?)null;
+            var outputDirectoryPath = (string)null;
             var emitAbsolutePaths = false;
 
             var options = new OptionSet
@@ -109,52 +109,52 @@ namespace SplitCsvApp
             if (!paths.Any())
                 throw new Exception("Missing at least one file specification.");
 
-            foreach (var rows in 
+            foreach (var rows in
                 from path in paths
-                from rows in 
-                    from source in new[] 
+                from rows in
+                    from source in new[]
                     {
                         Parse(() => new TextFieldParser(path, encoding, detectEncoding: false)
                         {
                             TextFieldType  = FieldType.Delimited,
-                            Delimiters = new[] { "," }, 
-                        }, 
-                        (_, hs) => hs, 
-                        (ln, hs, fs) => new 
-                        { 
-                            LineNumber = ln, 
-                            Headers = hs, 
-                            Fields = fs 
+                            Delimiters = new[] { "," },
+                        },
+                        (_, hs) => hs,
+                        (ln, hs, fs) => new
+                        {
+                            LineNumber = ln,
+                            Headers = hs,
+                            Fields = fs
                         })
                     }
                     select source.Index() into source
                     from pair in source.GroupAdjacent(e => e.Key / linesPerGroup, e => e.Value)
                                        .Pairwise((prev, curr) => new { Previous = prev, Current = curr })
                                        .Index()
-                    from rows in pair.Key == 0 
-                                 ? new[] { pair.Value.Previous, pair.Value.Current } 
+                    from rows in pair.Key == 0
+                                 ? new[] { pair.Value.Previous, pair.Value.Current }
                                  : new[] { pair.Value.Current }
                     select rows
-                let filename = string.Format(CultureInfo.InvariantCulture, 
-                                   @"{0}-{1}{2}", 
+                let filename = string.Format(CultureInfo.InvariantCulture,
+                                   @"{0}-{1}{2}",
                                    Path.GetFileNameWithoutExtension(path),
                                    rows.Key + 1,
                                    Path.GetExtension(path))
-                let dir = string.IsNullOrEmpty(outputDirectoryPath) 
-                        ? Path.GetDirectoryName(path) 
+                let dir = string.IsNullOrEmpty(outputDirectoryPath)
+                        ? Path.GetDirectoryName(path)
                         : outputDirectoryPath
                 let ofp = Path.Combine(dir, filename)
-                select new 
+                select new
                 {
-                    OutputFilePath = emitAbsolutePaths 
-                                   ? Path.GetFullPath(ofp) 
+                    OutputFilePath = emitAbsolutePaths
+                                   ? Path.GetFullPath(ofp)
                                    : ofp,
                     Rows = from row in rows.Index()
-                           select new 
-                           { 
-                               Index = row.Key, 
-                               row.Value.Headers, 
-                               row.Value.Fields 
+                           select new
+                           {
+                               Index = row.Key,
+                               row.Value.Headers,
+                               row.Value.Fields
                            }
                 })
             {
@@ -173,8 +173,8 @@ namespace SplitCsvApp
         {
             Debug.Assert(fields != null);
 
-            var quoted = 
-                from field in fields 
+            var quoted =
+                from field in fields
                 select field ?? string.Empty into field
                 select field.Replace("\"", "\"\"") into escaped
                 select "\"" + escaped + "\"";
@@ -182,7 +182,7 @@ namespace SplitCsvApp
         }
 
         static IEnumerable<TResult> Parse<THeader, TResult>(
-            Func<TextFieldParser> opener, 
+            Func<TextFieldParser> opener,
             Func<long, string[], THeader> headerSelector,
             Func<long, THeader, string[], TResult> resultSelector)
         {
