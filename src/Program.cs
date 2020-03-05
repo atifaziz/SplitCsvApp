@@ -157,13 +157,13 @@ namespace SplitCsvApp
 
                             writer = new StreamWriter(outputFilePath, false, encoding);
                             Console.WriteLine(emitAbsolutePaths ? Path.GetFullPath(outputFilePath) : outputFilePath);
-                            writer.WriteLine(header.ToQuotedCommaDelimited());
+                            header.WriteCsv(writer);
                         }
 
                         if (row.Count != header.Count)
                             throw new Exception($"File \"{path}\" has an uneven row on line {row.LineNumber}; expected {header.Count} fields, got {row.Count} instead.");
 
-                        writer.WriteLine(row.ToQuotedCommaDelimited());
+                        row.WriteCsv(writer);
                     }
                 }
                 finally
@@ -173,11 +173,23 @@ namespace SplitCsvApp
             }
         }
 
-        static string ToQuotedCommaDelimited(this IEnumerable<string> fields) =>
-            string.Join(",", from field in fields
-                             select field ?? string.Empty into field
-                             select field.Replace("\"", "\"\"") into escaped
-                             select "\"" + escaped + "\"");
+        static void WriteCsv(this TextRow row, TextWriter writer)
+        {
+            var i = 0;
+            foreach (var field in row)
+            {
+                if (i++ > 0)
+                    writer.Write(',');
+
+                writer.Write('"');
+                writer.Write(field.IndexOf('"') >= 0
+                              ? field.Replace("\"", "\"\"")
+                              : field);
+                writer.Write('"');
+            }
+
+            writer.WriteLine();
+        }
 
         static readonly Uri HomeUrl = new Uri("https://github.com/atifaziz/SplitCsvApp");
 
