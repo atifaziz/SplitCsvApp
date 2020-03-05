@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SplitCsvApp", "SplitCsvApp.csproj", "{97C31837-0776-410E-9AA6-FEAE71B787A6}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SplitCsvApp", "src\SplitCsvApp.csproj", "{97C31837-0776-410E-9AA6-FEAE71B787A6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{741354B6-18BD-4FD5-BD04-1090280FBCE5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B6A076CD-F924-4A78-B5E7-A7AD24ABC4EE}"
 	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
+		.editorconfig = .editorconfig
+		build.cmd = build.cmd
+		build.sh = build.sh
 	EndProjectSection
 EndProject
 Global
@@ -23,5 +25,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {17D7DA35-1872-4D6B-B2DD-D9EA0CB96A0F}
 	EndGlobalSection
 EndGlobal
