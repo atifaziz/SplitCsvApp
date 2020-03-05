@@ -109,45 +109,65 @@ namespace SplitCsvApp
             if (!paths.Any())
                 throw new Exception("Missing at least one file specification.");
 
-            foreach (var rows in
-                from path in paths
-                from rows in
-                    from pair in File.ReadLines(path, encoding)
-                                     .ParseCsv(hr => hr)
-                                     .Index()
-                                     .GroupAdjacent(e => e.Key / linesPerGroup, e => e.Value)
-                                     .Pairwise((prev, curr) => new { Previous = prev, Current = curr })
-                                     .Index()
-                    from rows in pair.Key == 0
-                                 ? new[] { pair.Value.Previous, pair.Value.Current }
-                                 : new[] { pair.Value.Current }
-                    select rows
-                let filename = FormattableString.Invariant($@"{Path.GetFileNameWithoutExtension(path)}-{rows.Key + 1}{Path.GetExtension(path)}")
-                let dir = string.IsNullOrEmpty(outputDirectoryPath)
-                        ? Path.GetDirectoryName(path)
-                        : outputDirectoryPath
-                let ofp = Path.Combine(dir, filename)
-                select new
-                {
-                    OutputFilePath = emitAbsolutePaths
-                                   ? Path.GetFullPath(ofp)
-                                   : ofp,
-                    Rows = from row in rows.Index()
-                           select new
-                           {
-                               Index   = row.Key,
-                               Headers = row.Value.Header,
-                               Fields  = row.Value.Row
-                           }
-                })
+            static void LogSkipWarning(string path) =>
+                Console.Error.WriteLine($"Skipping \"{path}\" as it appears empty.");
+
+            foreach (var path in paths)
             {
-                Console.WriteLine(rows.OutputFilePath);
-                using var writer = new StreamWriter(rows.OutputFilePath, false, encoding);
-                foreach (var row in rows.Rows)
+                if (new FileInfo(path).Length == 0)
                 {
-                    if (row.Index == 0)
-                        writer.WriteLine(row.Headers.ToQuotedCommaDelimited());
-                    writer.WriteLine(row.Fields.ToQuotedCommaDelimited());
+                    LogSkipWarning(path);
+                    continue;
+                }
+
+                var lines = File.ReadLines(path, encoding);
+                var header = lines.ParseCsv().FirstOrDefault();
+
+                if (header.LineNumber == 0)
+                {
+                    LogSkipWarning(path);
+                    continue;
+                }
+
+                var rows =
+                    from e in lines.ParseCsv(hr => hr).Index()
+                    select (Group: 1 + e.Key / linesPerGroup, Fields: e.Value.Row);
+
+                if (!rows.SkipWhile(e => e.Group == 1).Take(1).Any())
+                    continue;
+
+                var writer = TextWriter.Null;
+
+                try
+                {
+                    foreach (var pair in rows.Prepend((0, default)).Pairwise(Tuple.Create))
+                    {
+                        var ((prevGroup, _), (group, row)) = pair;
+
+                        if (group != prevGroup)
+                        {
+                            writer.Close();
+
+                            var filename = FormattableString.Invariant($@"{Path.GetFileNameWithoutExtension(path)}-{group}{Path.GetExtension(path)}");
+                            var dir = string.IsNullOrEmpty(outputDirectoryPath)
+                                    ? Path.GetDirectoryName(path)
+                                    : outputDirectoryPath;
+                            var outputFilePath = Path.Combine(dir, filename);
+
+                            writer = new StreamWriter(outputFilePath, false, encoding);
+                            Console.WriteLine(emitAbsolutePaths ? Path.GetFullPath(outputFilePath) : outputFilePath);
+                            writer.WriteLine(header.ToQuotedCommaDelimited());
+                        }
+
+                        if (row.Count != header.Count)
+                            throw new Exception($"File \"{path}\" has an uneven row on line {row.LineNumber}; expected {header.Count} fields, got {row.Count} instead.");
+
+                        writer.WriteLine(row.ToQuotedCommaDelimited());
+                    }
+                }
+                finally
+                {
+                    writer.Close();
                 }
             }
         }
