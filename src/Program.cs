@@ -28,7 +28,7 @@ namespace SplitCsvApp
     using System.IO;
     using System.Linq;
     using System.Text;
-    using Microsoft.VisualBasic.FileIO;
+    using Dsv;
     using Mono.Options;
     using MoreLinq;
 
@@ -112,25 +112,12 @@ namespace SplitCsvApp
             foreach (var rows in
                 from path in paths
                 from rows in
-                    from source in new[]
-                    {
-                        Parse(() => new TextFieldParser(path, encoding, detectEncoding: false)
-                        {
-                            TextFieldType  = FieldType.Delimited,
-                            Delimiters = new[] { "," },
-                        },
-                        (_, hs) => hs,
-                        (ln, hs, fs) => new
-                        {
-                            LineNumber = ln,
-                            Headers = hs,
-                            Fields = fs
-                        })
-                    }
-                    select source.Index() into source
-                    from pair in source.GroupAdjacent(e => e.Key / linesPerGroup, e => e.Value)
-                                       .Pairwise((prev, curr) => new { Previous = prev, Current = curr })
-                                       .Index()
+                    from pair in File.ReadLines(path, encoding)
+                                     .ParseCsv(hr => hr)
+                                     .Index()
+                                     .GroupAdjacent(e => e.Key / linesPerGroup, e => e.Value)
+                                     .Pairwise((prev, curr) => new { Previous = prev, Current = curr })
+                                     .Index()
                     from rows in pair.Key == 0
                                  ? new[] { pair.Value.Previous, pair.Value.Current }
                                  : new[] { pair.Value.Current }
@@ -152,9 +139,9 @@ namespace SplitCsvApp
                     Rows = from row in rows.Index()
                            select new
                            {
-                               Index = row.Key,
-                               row.Value.Headers,
-                               row.Value.Fields
+                               Index   = row.Key,
+                               Headers = row.Value.Header,
+                               Fields  = row.Value.Row
                            }
                 })
             {
@@ -179,36 +166,6 @@ namespace SplitCsvApp
                 select field.Replace("\"", "\"\"") into escaped
                 select "\"" + escaped + "\"";
             return quoted.ToDelimitedString(",");
-        }
-
-        static IEnumerable<TResult> Parse<THeader, TResult>(
-            Func<TextFieldParser> opener,
-            Func<long, string[], THeader> headerSelector,
-            Func<long, THeader, string[], TResult> resultSelector)
-        {
-            Debug.Assert(opener != null);
-            Debug.Assert(headerSelector != null);
-            Debug.Assert(resultSelector != null);
-
-            using (var parser = opener())
-            {
-                if (parser == null)
-                    throw new NullReferenceException("Unexpected null reference where an instance of TextFieldParser was expected.");
-                var headerInitialzed = false;
-                var header = default(THeader);
-                while (!parser.EndOfData)
-                {
-                    if (!headerInitialzed)
-                    {
-                        header = headerSelector(parser.LineNumber, parser.ReadFields());
-                        headerInitialzed = true;
-                    }
-                    else
-                    {
-                        yield return resultSelector(parser.LineNumber, header, parser.ReadFields());
-                    }
-                }
-            }
         }
 
         static readonly Uri HomeUrl = new Uri("https://github.com/atifaziz/SplitCsvApp");
