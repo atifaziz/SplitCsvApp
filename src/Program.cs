@@ -76,7 +76,7 @@ namespace SplitCsvApp
                 { "verbose|v", "enable additional output", _ => verbose = true },
                 { "d|debug", "debug break", _ => debug = true },
                 { "e|encoding=", "input/output file encoding", v => encoding = Encoding.GetEncoding(v) },
-                { "l|lines=", string.Format("lines per split ({0:N0})", Defaults.LinesPerGroup), v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
+                { "l|lines=", $"lines per split ({Defaults.LinesPerGroup:N0})", v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
                 { "od|output-dir=", "output directory (default is same as source)", v => outputDirectoryPath = v.Trim() },
                 { "ap|absolute-paths", "emit absolute paths to split files", v => emitAbsolutePaths = true },
             };
@@ -122,11 +122,7 @@ namespace SplitCsvApp
                                  ? new[] { pair.Value.Previous, pair.Value.Current }
                                  : new[] { pair.Value.Current }
                     select rows
-                let filename = string.Format(CultureInfo.InvariantCulture,
-                                   @"{0}-{1}{2}",
-                                   Path.GetFileNameWithoutExtension(path),
-                                   rows.Key + 1,
-                                   Path.GetExtension(path))
+                let filename = FormattableString.Invariant($@"{Path.GetFileNameWithoutExtension(path)}-{rows.Key + 1}{Path.GetExtension(path)}")
                 let dir = string.IsNullOrEmpty(outputDirectoryPath)
                         ? Path.GetDirectoryName(path)
                         : outputDirectoryPath
@@ -146,7 +142,7 @@ namespace SplitCsvApp
                 })
             {
                 Console.WriteLine(rows.OutputFilePath);
-                using (var writer = new StreamWriter(rows.OutputFilePath, false, encoding))
+                using var writer = new StreamWriter(rows.OutputFilePath, false, encoding);
                 foreach (var row in rows.Rows)
                 {
                     if (row.Index == 0)
@@ -175,7 +171,7 @@ namespace SplitCsvApp
             var verinfo = GetVersionInfo();
             return new[]
             {
-                string.Format("{0} (version {1})", verinfo.ProductName, verinfo.FileVersion),
+                $"{verinfo.ProductName} (version {verinfo.FileVersion})",
                 HomeUrl.OriginalString,
                 null,
                 verinfo.LegalCopyright,
