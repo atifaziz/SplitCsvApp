@@ -30,7 +30,8 @@ namespace SplitCsvApp
     using System.Text;
     using Dsv;
     using Mono.Options;
-    using MoreLinq;
+    using static MoreLinq.Extensions.PairwiseExtension;
+    using static MoreLinq.Extensions.IndexExtension;
 
     #endregion
 
