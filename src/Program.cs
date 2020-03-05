@@ -172,17 +172,11 @@ namespace SplitCsvApp
             }
         }
 
-        static string ToQuotedCommaDelimited(this IEnumerable<string> fields)
-        {
-            Debug.Assert(fields != null);
-
-            var quoted =
-                from field in fields
-                select field ?? string.Empty into field
-                select field.Replace("\"", "\"\"") into escaped
-                select "\"" + escaped + "\"";
-            return quoted.ToDelimitedString(",");
-        }
+        static string ToQuotedCommaDelimited(this IEnumerable<string> fields) =>
+            string.Join(",", from field in fields
+                             select field ?? string.Empty into field
+                             select field.Replace("\"", "\"\"") into escaped
+                             select "\"" + escaped + "\"");
 
         static readonly Uri HomeUrl = new Uri("https://github.com/atifaziz/SplitCsvApp");
 
