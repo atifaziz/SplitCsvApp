@@ -37,18 +37,21 @@ namespace SplitCsvApp
 
     static class Program
     {
-        static bool _verbose;
-
         static int Main(string[] args)
         {
+            TextWriter log = null;
+
             try
             {
-                Run(args);
+                Run(args, ref log);
                 return Environment.ExitCode;
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(_verbose ? e.ToString() : e.GetBaseException().Message);
+                if (log != null)
+                    log.WriteLine(e.ToString());
+                else
+                   Console.Error.WriteLine(e.GetBaseException().Message);
 
                 return Environment.ExitCode != 0
                      ? Environment.ExitCode : 0xbad;
@@ -60,11 +63,12 @@ namespace SplitCsvApp
             public const int LinesPerGroup = 10000;
         }
 
-        static void Run(IEnumerable<string> args)
+        static void Run(IEnumerable<string> args, ref TextWriter log)
         {
             Debug.Assert(args != null);
 
             var help = false;
+            var verbose = false;
             var debug = false;
             var encoding = Encoding.Default;
             var linesPerGroup = (int?)null;
@@ -74,7 +78,7 @@ namespace SplitCsvApp
             var options = new OptionSet
             {
                 { "?|help|h"         , "prints out the options", _ => help = true },
-                { "verbose|v"        , "enable additional output", _ => _verbose = true },
+                { "verbose|v"        , "enable additional output", _ => verbose = true },
                 { "d|debug"          , "debug break", _ => debug = true },
                 { "e|encoding="      , "input/output file encoding", v => encoding = Encoding.GetEncoding(v) },
                 { "l|lines="         , $"lines per split ({Defaults.LinesPerGroup:N0})", v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
@@ -86,6 +90,9 @@ namespace SplitCsvApp
 
             if (debug)
                 Debugger.Break();
+
+            if (verbose)
+                log = Console.Error;
 
             if (help)
             {
@@ -108,12 +115,14 @@ namespace SplitCsvApp
             static void LogSkipWarning(string path) =>
                 Console.Error.WriteLine($"Skipping empty file: {path}");
 
-            Split(Math.Max(1, linesPerGroup ?? Defaults.LinesPerGroup));
+            Split(Math.Max(1, linesPerGroup ?? Defaults.LinesPerGroup), log);
 
-            void Split(int linesPerGroup)
+            void Split(int linesPerGroup, TextWriter log)
             {
                 foreach (var path in paths)
                 {
+                    log?.WriteLine("Processing: " + path);
+
                     if (new FileInfo(path).Length == 0)
                     {
                         LogSkipWarning(path);
@@ -134,14 +143,21 @@ namespace SplitCsvApp
                         select (Group: 1 + e.Key / linesPerGroup, Fields: e.Value.Row);
 
                     if (!rows.SkipWhile(e => e.Group == 1).Take(1).Any())
+                    {
+                        log?.WriteLine("...did not need splitting.");
                         continue;
+                    }
+
+                    var sw = Stopwatch.StartNew();
 
                     var writer = TextWriter.Null;
+                    var rowCount = 0L;
 
                     try
                     {
                         foreach (var pair in rows.Prepend((0, default)).Pairwise(Tuple.Create))
                         {
+                            rowCount++;
                             var ((prevGroup, _), (group, row)) = pair;
 
                             if (group != prevGroup)
@@ -169,6 +185,8 @@ namespace SplitCsvApp
                     {
                         writer.Close();
                     }
+
+                    log?.WriteLine($"...{rowCount:N0} total row(s); time taken = {sw.Elapsed}");
                 }
             }
         }
