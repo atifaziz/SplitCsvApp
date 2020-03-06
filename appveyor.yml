@@ -30,19 +30,19 @@ before_build:
 build_script:
 - ps: |-
     if ($isWindows) {
-      $env:RID = 'win-x64'
+      $rid = 'win-x64'
     }
     elseif ($isLinux) {
-      $env:RID = 'linux-x64'
+      $rid = 'linux-x64'
     }
     else {
       throw 'Unsupported platform'
     }
 - ps: dotnet publish -c Release -o dist/fdd
-- ps: dotnet publish -c Release -o dist/scd          -r $RID
-- ps: dotnet publish -c Release -o dist/one          -r $RID /p:PublishSingleFile=true
-- ps: dotnet publish -c Release -o dist/one+trim     -r $RID /p:PublishSingleFile=true /p:PublishTrimmed=true
-- ps: dotnet publish -c Release -o dist/one+trim+rtr -r $RID /p:PublishSingleFile=true /p:PublishTrimmed=true /p:PublishReadyToRun=true /p:PublishReadyToRunShowWarnings=true
+- ps: dotnet publish -c Release -o dist/scd          -r $rid
+- ps: dotnet publish -c Release -o dist/one          -r $rid /p:PublishSingleFile=true
+- ps: dotnet publish -c Release -o dist/one+trim     -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true
+- ps: dotnet publish -c Release -o dist/one+trim+rtr -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true /p:PublishReadyToRun=true /p:PublishReadyToRunShowWarnings=true
 after_build:
 - ps: |-
     if ($isWindows) {
