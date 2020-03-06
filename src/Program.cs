@@ -74,6 +74,7 @@ namespace SplitCsvApp
             var linesPerGroup = (int?)null;
             var outputDirectoryPath = (string)null;
             var emitAbsolutePaths = false;
+            var isDryRun = false;
 
             var options = new OptionSet
             {
@@ -84,6 +85,7 @@ namespace SplitCsvApp
                 { "l|lines="         , $"lines per split ({Defaults.LinesPerGroup:N0})", v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
                 { "od|output-dir="   , "output directory (default is same as source)", v => outputDirectoryPath = v.Trim() },
                 { "ap|absolute-paths", "emit absolute paths to split files", v => emitAbsolutePaths = true },
+                { "dry-run"          , "pretend to split", v => isDryRun = true },
             };
 
             var tail = options.Parse(args);
@@ -170,7 +172,9 @@ namespace SplitCsvApp
                                         : outputDirectoryPath;
                                 var outputFilePath = Path.Combine(dir, filename);
 
-                                writer = new StreamWriter(outputFilePath, false, encoding);
+                                if (!isDryRun)
+                                    writer = new StreamWriter(outputFilePath, false, encoding);
+
                                 Console.WriteLine(emitAbsolutePaths ? Path.GetFullPath(outputFilePath) : outputFilePath);
                                 header.WriteCsv(writer);
                             }
@@ -178,7 +182,8 @@ namespace SplitCsvApp
                             if (row.Count != header.Count)
                                 throw new Exception($"File \"{path}\" has an uneven row on line {row.LineNumber}; expected {header.Count} fields, got {row.Count} instead.");
 
-                            row.WriteCsv(writer);
+                            if (!isDryRun)
+                                row.WriteCsv(writer);
                         }
                     }
                     finally
