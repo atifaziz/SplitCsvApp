@@ -223,7 +223,6 @@ namespace SplitCsvApp
                 "Portions:",
                 "  - Copyright (c) 2008 Novell (http://www.novell.com)",
                 "  - Copyright (c) 2009 Federico Di Gregorio",
-                "  - Copyright (c) 2008 Jonathan Skeet",
                 null,
                 "This is free software; see the source for copying conditions. There is NO",
                 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
