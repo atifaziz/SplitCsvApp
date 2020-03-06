@@ -37,6 +37,8 @@ namespace SplitCsvApp
 
     static class Program
     {
+        static bool _verbose;
+
         static int Main(string[] args)
         {
             try
@@ -46,8 +48,7 @@ namespace SplitCsvApp
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e.GetBaseException().Message);
-                Trace.TraceError(e.ToString());
+                Console.Error.WriteLine(_verbose ? e.ToString() : e.GetBaseException().Message);
 
                 return Environment.ExitCode != 0
                      ? Environment.ExitCode : 0xbad;
@@ -64,7 +65,6 @@ namespace SplitCsvApp
             Debug.Assert(args != null);
 
             var help = false;
-            var verbose = false;
             var debug = false;
             var encoding = Encoding.Default;
             var linesPerGroup = (int?)null;
@@ -74,7 +74,7 @@ namespace SplitCsvApp
             var options = new OptionSet
             {
                 { "?|help|h"         , "prints out the options", _ => help = true },
-                { "verbose|v"        , "enable additional output", _ => verbose = true },
+                { "verbose|v"        , "enable additional output", _ => _verbose = true },
                 { "d|debug"          , "debug break", _ => debug = true },
                 { "e|encoding="      , "input/output file encoding", v => encoding = Encoding.GetEncoding(v) },
                 { "l|lines="         , $"lines per split ({Defaults.LinesPerGroup:N0})", v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
@@ -86,9 +86,6 @@ namespace SplitCsvApp
 
             if (debug)
                 Debugger.Break();
-
-            if (verbose)
-                Trace.Listeners.Add(new ConsoleTraceListener(useErrorStream: true));
 
             if (help)
             {
