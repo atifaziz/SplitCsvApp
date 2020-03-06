@@ -73,12 +73,12 @@ namespace SplitCsvApp
 
             var options = new OptionSet
             {
-                { "?|help|h", "prints out the options", _ => help = true },
-                { "verbose|v", "enable additional output", _ => verbose = true },
-                { "d|debug", "debug break", _ => debug = true },
-                { "e|encoding=", "input/output file encoding", v => encoding = Encoding.GetEncoding(v) },
-                { "l|lines=", $"lines per split ({Defaults.LinesPerGroup:N0})", v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
-                { "od|output-dir=", "output directory (default is same as source)", v => outputDirectoryPath = v.Trim() },
+                { "?|help|h"         , "prints out the options", _ => help = true },
+                { "verbose|v"        , "enable additional output", _ => verbose = true },
+                { "d|debug"          , "debug break", _ => debug = true },
+                { "e|encoding="      , "input/output file encoding", v => encoding = Encoding.GetEncoding(v) },
+                { "l|lines="         , $"lines per split ({Defaults.LinesPerGroup:N0})", v => linesPerGroup = int.Parse(v, NumberStyles.None | NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite) },
+                { "od|output-dir="   , "output directory (default is same as source)", v => outputDirectoryPath = v.Trim() },
                 { "ap|absolute-paths", "emit absolute paths to split files", v => emitAbsolutePaths = true },
             };
 
