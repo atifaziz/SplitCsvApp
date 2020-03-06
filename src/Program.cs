@@ -98,8 +98,6 @@ namespace SplitCsvApp
                 return;
             }
 
-            linesPerGroup = Math.Max(1, linesPerGroup ?? Defaults.LinesPerGroup);
-
             var paths = from arg in tail
                         select arg.Trim() into arg
                         where arg.Length > 0
@@ -113,62 +111,67 @@ namespace SplitCsvApp
             static void LogSkipWarning(string path) =>
                 Console.Error.WriteLine($"Skipping empty file: {path}");
 
-            foreach (var path in paths)
+            Split(Math.Max(1, linesPerGroup ?? Defaults.LinesPerGroup));
+
+            void Split(int linesPerGroup)
             {
-                if (new FileInfo(path).Length == 0)
+                foreach (var path in paths)
                 {
-                    LogSkipWarning(path);
-                    continue;
-                }
-
-                var lines = File.ReadLines(path, encoding);
-                var header = lines.ParseCsv().FirstOrDefault();
-
-                if (header.LineNumber == 0)
-                {
-                    LogSkipWarning(path);
-                    continue;
-                }
-
-                var rows =
-                    from e in lines.ParseCsv(hr => hr).Index()
-                    select (Group: 1 + e.Key / linesPerGroup, Fields: e.Value.Row);
-
-                if (!rows.SkipWhile(e => e.Group == 1).Take(1).Any())
-                    continue;
-
-                var writer = TextWriter.Null;
-
-                try
-                {
-                    foreach (var pair in rows.Prepend((0, default)).Pairwise(Tuple.Create))
+                    if (new FileInfo(path).Length == 0)
                     {
-                        var ((prevGroup, _), (group, row)) = pair;
-
-                        if (group != prevGroup)
-                        {
-                            writer.Close();
-
-                            var filename = FormattableString.Invariant($@"{Path.GetFileNameWithoutExtension(path)}-{group}{Path.GetExtension(path)}");
-                            var dir = string.IsNullOrEmpty(outputDirectoryPath)
-                                    ? Path.GetDirectoryName(path)
-                                    : outputDirectoryPath;
-                            var outputFilePath = Path.Combine(dir, filename);
-
-                            writer = new StreamWriter(outputFilePath, false, encoding);
-                            Console.WriteLine(emitAbsolutePaths ? Path.GetFullPath(outputFilePath) : outputFilePath);
-                            header.WriteCsv(writer);
-                        }
-
-                        if (row.Count != header.Count)
-                            throw new Exception($"File \"{path}\" has an uneven row on line {row.LineNumber}; expected {header.Count} fields, got {row.Count} instead.");
-
-                        row.WriteCsv(writer);
+                        LogSkipWarning(path);
+                        continue;
                     }
-                }
-                finally
-                {
-                    writer.Close();
+
+                    var lines = File.ReadLines(path, encoding);
+                    var header = lines.ParseCsv().FirstOrDefault();
+
+                    if (header.LineNumber == 0)
+                    {
+                        LogSkipWarning(path);
+                        continue;
+                    }
+
+                    var rows =
+                        from e in lines.ParseCsv(hr => hr).Index()
+                        select (Group: 1 + e.Key / linesPerGroup, Fields: e.Value.Row);
+
+                    if (!rows.SkipWhile(e => e.Group == 1).Take(1).Any())
+                        continue;
+
+                    var writer = TextWriter.Null;
+
+                    try
+                    {
+                        foreach (var pair in rows.Prepend((0, default)).Pairwise(Tuple.Create))
+                        {
+                            var ((prevGroup, _), (group, row)) = pair;
+
+                            if (group != prevGroup)
+                            {
+                                writer.Close();
+
+                                var filename = FormattableString.Invariant($@"{Path.GetFileNameWithoutExtension(path)}-{group}{Path.GetExtension(path)}");
+                                var dir = string.IsNullOrEmpty(outputDirectoryPath)
+                                        ? Path.GetDirectoryName(path)
+                                        : outputDirectoryPath;
+                                var outputFilePath = Path.Combine(dir, filename);
+
+                                writer = new StreamWriter(outputFilePath, false, encoding);
+                                Console.WriteLine(emitAbsolutePaths ? Path.GetFullPath(outputFilePath) : outputFilePath);
+                                header.WriteCsv(writer);
+                            }
+
+                            if (row.Count != header.Count)
+                                throw new Exception($"File \"{path}\" has an uneven row on line {row.LineNumber}; expected {header.Count} fields, got {row.Count} instead.");
+
+                            row.WriteCsv(writer);
+                        }
+                    }
+                    finally
+                    {
+                        writer.Close();
+                    }
                 }
             }
         }
