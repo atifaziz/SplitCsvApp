@@ -111,7 +111,7 @@ namespace SplitCsvApp
                 throw new Exception("Missing at least one file specification.");
 
             static void LogSkipWarning(string path) =>
-                Console.Error.WriteLine($"Skipping \"{path}\" as it appears empty.");
+                Console.Error.WriteLine($"Skipping empty file: {path}");
 
             foreach (var path in paths)
             {
