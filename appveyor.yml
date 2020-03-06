@@ -52,7 +52,7 @@ after_build:
           7z.exe a "..\..\splitcsv-1.2-win-x64-$($_.Name).zip" *
         }
         elseif ($isLinux) {
-          tar -vczf "../../splitcsv-1.2-ubuntu-18.04-x64-$($_.Name).tar.gz" .
+          tar -vczf "../../splitcsv-1.2-ubuntu-18.04-x64-$($_.Name).tar.gz" *
         }
         popd
       }
