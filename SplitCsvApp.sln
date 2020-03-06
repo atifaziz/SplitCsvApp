@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B6A076CD-F924-4A78-B5E7-A7AD24ABC4EE}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		appveyor.yml = appveyor.yml
 		build.cmd = build.cmd
 		build.sh = build.sh
 		publish.cmd = publish.cmd
