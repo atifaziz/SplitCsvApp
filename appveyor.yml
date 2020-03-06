@@ -29,7 +29,6 @@ before_build:
 - dotnet --info
 build_script:
 - ps: |-
-    dotnet publish -c Release -o dist/fdd
     if ($isWindows) {
       $rid = 'win-x64'
     }
@@ -39,10 +38,11 @@ build_script:
     else {
       throw 'Unsupported platform'
     }
-    dotnet publish -c Release -o dist/scd          -r $rid
-    dotnet publish -c Release -o dist/one          -r $rid /p:PublishSingleFile=true
-    dotnet publish -c Release -o dist/one+trim     -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true
-    dotnet publish -c Release -o dist/one+trim+rtr -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true /p:PublishReadyToRun=true /p:PublishReadyToRunShowWarnings=true
+- dotnet publish -c Release -o dist/fdd
+- dotnet publish -c Release -o dist/scd          -r $rid
+- dotnet publish -c Release -o dist/one          -r $rid /p:PublishSingleFile=true
+- dotnet publish -c Release -o dist/one+trim     -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true
+- dotnet publish -c Release -o dist/one+trim+rtr -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true /p:PublishReadyToRun=true /p:PublishReadyToRunShowWarnings=true
 notifications:
 - provider: Email
   to:
