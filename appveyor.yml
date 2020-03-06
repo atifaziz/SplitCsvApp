@@ -1,0 +1,52 @@
+version: '{build}'
+image:
+  - Visual Studio 2019
+  - Ubuntu
+skip_commits:
+  files:
+    - '*.md'
+    - '*.txt'
+branches:
+  only:
+    - master
+  except:
+    - /.+[\-.]wip$/
+    - wip
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+environment:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+install:
+  - cmd: curl -OsSL https://dot.net/v1/dotnet-install.ps1
+  - ps: if ($isWindows) { ./dotnet-install.ps1 -JsonFile global.json }
+  - sh: curl -OsSL https://dot.net/v1/dotnet-install.sh
+  - sh: chmod +x dotnet-install.sh
+  - sh: ./dotnet-install.sh --jsonfile global.json
+  - sh: export PATH="$HOME/.dotnet:$PATH"
+before_build:
+- dotnet --info
+build_script:
+- ps:|-
+    dotnet publish -c Release -o dist/fdd
+    if ($isWindows) {
+      $rid = 'win-x64'
+    }
+    elseif ($isLinux) {
+      $rid = 'linux-x64'
+    }
+    else {
+      throw 'Unsupported platform'
+    }
+    dotnet publish -c Release -o dist\scd          -r $rid
+    dotnet publish -c Release -o dist\one          -r $rid /p:PublishSingleFile=true
+    dotnet publish -c Release -o dist\one+trim     -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true
+    dotnet publish -c Release -o dist\one+trim+rtr -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true /p:PublishReadyToRun=true /p:PublishReadyToRunShowWarnings=true
+notifications:
+- provider: Email
+  to:
+  - raboof-ci@googlegroups.com
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: false
