@@ -45,19 +45,17 @@ build_script:
 - ps: dotnet publish -c Release -o dist/one+trim+rtr -r $rid /p:PublishSingleFile=true /p:PublishTrimmed=true /p:PublishReadyToRun=true /p:PublishReadyToRunShowWarnings=true
 after_build:
 - ps: |-
-    if ($isWindows) {
-      dir -Directory dist |
-        % {
-          pushd $_.FullName
-          if ($isWindows) {
-            7z.exe a "..\..\splitcsv-1.2-ubuntu-18.04-x64-$($_.Name).zip" *
-          }
-          elseif ($isLinux) {
-            tar -vczf ../../splitcsv-1.2-win-x64-$d.tar.gz .
-          }
-          popd
+    dir -Directory dist |
+      % {
+        pushd $_.FullName
+        if ($isWindows) {
+          7z.exe a "..\..\splitcsv-1.2-ubuntu-18.04-x64-$($_.Name).zip" *
         }
-    }
+        elseif ($isLinux) {
+          tar -vczf ../../splitcsv-1.2-win-x64-$d.tar.gz .
+        }
+        popd
+      }
 artifacts:
 
   - path: splitcsv-*.tar.gz
