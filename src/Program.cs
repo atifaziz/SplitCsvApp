@@ -100,7 +100,18 @@ namespace SplitCsvApp
             {
                 foreach (var line in About().Concat(new[] { null, "options:", null }))
                     Console.WriteLine(line);
+
                 options.WriteOptionDescriptions(Console.Out);
+
+                if (verbose)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Diagnostics:");
+                    Console.WriteLine();
+                    Console.WriteLine("Runtime: " + AppContext.TargetFrameworkName);
+                    Console.WriteLine("Base: " + AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
+                }
+
                 return;
             }
 
