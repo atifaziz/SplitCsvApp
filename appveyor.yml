@@ -28,7 +28,7 @@ install:
 before_build:
 - dotnet --info
 build_script:
-- ps:|-
+- ps: |-
     dotnet publish -c Release -o dist/fdd
     if ($isWindows) {
       $rid = 'win-x64'
