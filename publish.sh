@@ -21,7 +21,7 @@ Use one of the following:
   - tizen.5.0.0
 
 For more information, see:
-https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids"
+https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids
 EOF
     exit 1
 fi
