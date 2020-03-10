@@ -3,9 +3,9 @@ set -e
 cd "$(dirname "$0")"
 if [ $# -eq 0 ]; then
     cat >&2 <<EOF
-Missing Linux RID argument.
+Missing RID argument.
 
-Use one of the following:
+Use one of the following for Linux:
 
 - Portable:
   - linux-x64       Most desktop distributions like CentOS, Debian, Fedora,
@@ -20,8 +20,20 @@ Use one of the following:
   - tizen.4.0.0
   - tizen.5.0.0
 
-For more information, see:
+For a more up to date list and information, see:
 https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids
+
+Use one of the following for macOS:
+
+- osx-x64         Portable (minimum OS version is macOS 10.12 Sierra).
+- osx.10.10-x64   Yosemite
+- osx.10.11-x64   El Capitan
+- osx.10.12-x64   Sierra
+- osx.10.13-x64   High Sierra
+- osx.10.14-x64   Mojave
+
+For a more up to date list and information, see:
+https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids
 EOF
     exit 1
 fi
