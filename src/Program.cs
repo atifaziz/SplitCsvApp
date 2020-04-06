@@ -67,6 +67,8 @@ namespace SplitCsvApp
         {
             Debug.Assert(args != null);
 
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             var help = false;
             var verbose = false;
             var debug = false;
